@@ -1,0 +1,99 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pago-qr",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "a6e9838a-ad37-4adf-a43e-5d1f36f3050f",
+      "name": "Webhook",
+      "webhookId": "f22f0114-ddf4-4e73-b1ac-086e13568e36"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE pedidos \nSET estado = 'PAGADO' \nWHERE monto = {{ $json.monto }} AND estado = 'PENDIENTE';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        352,
+        0
+      ],
+      "id": "eeedf9fc-4d72-4c73-bafc-798ad975cccb",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "D2LwYM49B3deBkWd",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Captura el monto numérico (ej: 0.10) y el nombre del cliente\nconst texto = $input.item.json.body.text || \"\";\n\nconst regexMonto = /Bs\\.\\s*([\\d\\.]+)/i;\nconst matchMonto = texto.match(regexMonto);\n\nconst monto = matchMonto ? parseFloat(matchMonto[1]) : 0;\n\nreturn {\n  json: {\n    monto: monto,\n    texto_original: texto\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        0
+      ],
+      "id": "a7c423a2-0046-4fb7-bef0-91c9e47db440",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "904fffea-9c6f-4ac6-a792-d1c741f8bff0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6dfb782030ad1b20e31c0269eb6e13f33f0c7f32bc74a5740143dff5a68ca9b1"
+  },
+  "nodeGroups": [],
+  "id": "bZ3wY4wIQyaEDEHl",
+  "tags": []
+}
